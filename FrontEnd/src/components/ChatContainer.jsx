@@ -20,7 +20,7 @@ const ChatContainer = () => {
   useEffect(() => {
     getMessages(selectedUser._id);
     messageListener();
-    () => {
+    return () => {
       messageUnListener();
     };
   }, [getMessages, selectedUser, messageListener, messageUnListener]);
