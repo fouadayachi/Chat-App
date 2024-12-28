@@ -1,10 +1,9 @@
-
 import toast from "react-hot-toast";
 import { create } from "zustand";
 import { axiosInstance } from "../config/axios";
 import { useAuthStore } from "./useAuthStore";
 
-export const useChatStore = create((set,get) => ({
+export const useChatStore = create((set, get) => ({
   messages: [],
   users: [],
   selectedUser: null,
@@ -34,26 +33,29 @@ export const useChatStore = create((set,get) => ({
   setSelectedUser: async (selectedUser) => {
     set({ selectedUser });
   },
-  sendMessage : async (message) => {
-    const {selectedUser,messages} = get();
+  sendMessage: async (message) => {
+    const { selectedUser, messages } = get();
     try {
-      const res = await axiosInstance.post(`/message/send/${selectedUser._id}`,message);
-      set({ messages : [...messages,res.data.message]});
+      const res = await axiosInstance.post(
+        `/message/send/${selectedUser._id}`,
+        message
+      );
+      set({ messages: [...messages, res.data.message] });
     } catch (error) {
       toast.error(error.response.data.message);
-      
     }
   },
-  messageListener : () => {
-    const {selectedUser} = get();
-    if(!selectedUser) return;
+  messageListener: () => {
+    const { selectedUser } = get();
+    if (!selectedUser) return;
     const socket = useAuthStore.getState().socket;
     socket.on("newMessage", (message) => {
+      if (selectedUser._id !== message.senderId) return;
       set({ messages: [...get().messages, message] });
-    })
+    });
   },
-  messageUnListener : () => {
+  messageUnListener: () => {
     const socket = useAuthStore.getState().socket;
     socket.off("newMessage");
-  }
+  },
 }));
